@@ -2,18 +2,31 @@
 require('dotenv').config()
 
 const express = require('express')
-const app = express();
-const cors = require('cors');
+const app = express()
+const cors = require('cors')
 const mongoose = require('mongoose')
 
-app.use(cors());
+app.use(cors())
 
-// Connect to the MongoDB database using the DATABASE_URL environment variable
-const db = mongoose.connection
-mongoose.connect(process.env.DATABASE_URL, { useNewUrlParser: true })
+const URI = "mongodb+srv://root:root@cluster0.ntehv8k.mongodb.net/?retryWrites=true&w=majority"
 
-db.on('error', (error) => console.error(error))
-db.once('open', () => console.log('Connected to Database'))
+mongoose.set('strictQuery', false)
+
+mongoose.connect(URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+  .then(() => {
+    console.log('Connected to MongoDB')
+    
+    // Start the server only after successfully connecting to the database
+    app.listen(3001, () => {
+      console.log('Express server is running on port 3001')
+    })
+  })
+  .catch((err) => {
+    console.error('MongoDB connection error:', err)
+  })
 
 // Parse JSON request bodies
 app.use(express.json())
@@ -39,8 +52,3 @@ app.use('/payrolls', payrollRouter)
 
 const expenseRouter = require('./routes/expenses')
 app.use('/expenses', expenseRouter)
-
-// Start the server on port 3001
-app.listen(3001, () =>
-    console.log("Express server is running on port 3001")
-)
